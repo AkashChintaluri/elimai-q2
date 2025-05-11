@@ -1,45 +1,80 @@
-# PDF OCR using Azure Computer Vision
+# Medical Report OCR
 
-This application uses Azure's Computer Vision API to perform OCR (Optical Character Recognition) on PDF documents.
+A web application for extracting structured data from medical reports using Azure's Document Intelligence and Computer Vision services.
 
-## Prerequisites
+## Features
 
-1. Python 3.7 or higher
-2. Azure Computer Vision API subscription
+- Upload medical reports in various formats (PDF, PNG, JPG, BMP, TIFF, GIF)
+- Extract structured data using two methods:
+  - Document Intelligence (Form Recognizer)
+  - Layout Analysis (Computer Vision)
+- Compare results from both methods
+- Download raw text output
+- Modern, responsive web interface
+- Drag-and-drop file upload
+
+## Project Structure
+
+```
+.
+├── app.py                 # Flask application
+├── pdf_ocr.py            # Document Intelligence implementation
+├── pdf_ocr_layout.py     # Layout Analysis implementation
+├── medical_template.json # Template for structured data
+├── requirements.txt      # Python dependencies
+├── templates/           # HTML templates
+│   └── index.html      # Main application page
+├── static/             # Static files (CSS, JS)
+├── uploads/            # Temporary storage for uploaded files
+└── output/            # Storage for processed results
+```
 
 ## Setup
 
-1. Install the required Python packages:
-   ```bash
-   pip install -r requirements.txt
-   ```
+1. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. Create a `.env` file in the project root with your Azure credentials:
-   ```
-   AZURE_VISION_KEY=your_subscription_key
-   AZURE_VISION_ENDPOINT=your_endpoint_url
-   ```
+2. Set up environment variables:
+Create a `.env` file with your Azure credentials:
+```
+AZURE_FORM_RECOGNIZER_ENDPOINT=your_endpoint
+AZURE_FORM_RECOGNIZER_KEY=your_key
+AZURE_VISION_ENDPOINT=your_endpoint
+AZURE_VISION_KEY=your_key
+```
+
+3. Run the application:
+```bash
+python app.py
+```
+
+4. Access the application at `http://localhost:5000`
 
 ## Usage
 
-Simply run the script:
-```bash
-python pdf_ocr.py
-```
+1. Open the web interface in your browser
+2. Drag and drop a medical report file or click to select
+3. Wait for the processing to complete
+4. View the extracted data in the structured format
+5. Compare results from both methods using the tabs
+6. Download raw text output if needed
 
-A file browser window will open where you can select your PDF file. The extracted text will be saved in the `output/extracted_text.txt` file.
+## Technologies Used
 
-## How it Works
+- Backend:
+  - Flask (Python web framework)
+  - Azure Document Intelligence
+  - Azure Computer Vision
+  - PyMuPDF (PDF processing)
 
-1. A file browser dialog opens for selecting the PDF file
-2. The PDF is converted to high-quality images using PyMuPDF
-3. Each image is processed using Azure Computer Vision API
-4. The extracted text from all pages is combined and saved to a text file
-5. A success message shows the location of the output file
+- Frontend:
+  - HTML5
+  - Tailwind CSS
+  - Vanilla JavaScript
+  - Modern CSS features
 
-## Technical Details
+## License
 
-- Uses PyMuPDF (fitz) for PDF to image conversion
-- Images are converted at 300 DPI for optimal OCR results
-- No temporary files are created during processing
-- Memory-efficient processing of large PDFs
+MIT License

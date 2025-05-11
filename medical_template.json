@@ -1,0 +1,29 @@
+{
+    "metadata": {
+        "date": null
+    },
+    "HAEMATOLOGY": {
+        "Complete Blood Count": [
+            "WBC Count",
+            "RBC Count",
+            "Hemoglobin",
+            "Packed Cell Volume [PCV]",
+            "Platelet Count"
+        ],
+        "Differential Count": [
+            "Neutrophils",
+            "Lymphocytes",
+            "Eosinophils",
+            "Monocytes",
+            "Basophils",
+            "Mylocytes",
+            "Metamylocytes",
+            "Blast"
+        ],
+        "Prothrombin Time": [
+            "Test",
+            "Control",
+            "INR"
+        ]
+    }
+} 
