@@ -4,237 +4,263 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medical Report OCR</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .drop-zone {
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .container { max-width: 1200px; margin: 20px auto; }
+        .result-section { margin-top: 20px; }
+        .loading { display: none; }
+        pre { white-space: pre-wrap; }
+        .pretty-data { display: none; }
+        .json-data { display: block; }
+        .data-section { margin-top: 20px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { 
+            padding: 8px; 
+            border: 1px solid #dee2e6;
         }
-        .drop-zone.dragover {
-            border-color: #1976d2;
-            background-color: rgba(25, 118, 210, 0.1);
+        .data-table th { 
+            background-color: #f8f9fa;
+            font-weight: bold;
         }
-        .loading {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            z-index: 1000;
-        }
-        .loading.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .table-container {
-            overflow-x: auto;
-        }
-        .parameter-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .parameter-table th,
-        .parameter-table td {
-            padding: 0.75rem;
-            border: 1px solid #e2e8f0;
-        }
-        .parameter-table th {
-            background-color: #f8fafc;
-            font-weight: 600;
-        }
-        .category-header {
-            background-color: #f1f5f9;
-            font-weight: 600;
-        }
-        .value-cell {
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
-        .error-message {
-            display: none;
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 0.5rem;
-            background-color: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-        }
-        .error-message.show {
-            display: block;
+        .section-title {
+            background-color: #e9ecef;
+            padding: 10px;
+            margin-top: 20px;
+            font-weight: bold;
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-4xl font-bold text-center text-gray-800 mb-2">Medical Report OCR</h1>
-        <p class="text-xl text-center text-gray-600 mb-8">Upload your medical report to extract structured data using enhanced OCR</p>
-
-        <div class="max-w-4xl mx-auto">
-            <div id="dropZone" class="drop-zone bg-white shadow-sm">
-                <div class="text-center">
-                    <svg class="mx-auto h-12 w-12 text-blue-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                    </svg>
-                    <p class="text-lg font-medium text-gray-700">Drag and drop a file here, or click to select</p>
-                    <p class="text-sm text-gray-500 mt-2">Supported formats: PDF, PNG, JPG, BMP, TIFF, GIF</p>
-                    <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Choose File
-                    </button>
-                    <input type="file" id="fileInput" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.bmp,.tiff,.tif,.gif">
-                </div>
-            </div>
-
-            <div id="errorMessage" class="error-message"></div>
-
-            <div id="results" class="hidden mt-8">
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold">Extracted Data</h2>
-                        <button id="downloadButton" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            Download Raw Text
-                        </button>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Medical Report OCR</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form id="uploadForm">
+                    <div class="mb-3">
+                        <label for="pdfFile" class="form-label">Select PDF File</label>
+                        <input type="file" class="form-control" id="pdfFile" accept=".pdf" required>
                     </div>
-                    <div class="table-container">
-                        <table class="parameter-table">
-                            <thead>
-                                <tr>
-                                    <th>Parameter</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resultsTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
+                    <button type="submit" class="btn btn-primary">Process PDF</button>
+                </form>
             </div>
         </div>
-    </div>
 
-    <div id="loading" class="loading">
-        <div class="text-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-            <p class="mt-4 text-lg text-gray-700">Processing your document...</p>
+        <div class="loading mt-3">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span class="ms-2">Processing PDF...</span>
+            </div>
+        </div>
+
+        <div class="result-section">
+            <div class="d-flex justify-content-end mb-3">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary active" id="jsonViewBtn">JSON View</button>
+                    <button type="button" class="btn btn-outline-primary" id="prettyViewBtn">Pretty View</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Extracted Data</h5>
+                </div>
+                <div class="card-body">
+                    <div id="jsonData" class="json-data">
+                        <pre id="extractedData" class="bg-light p-3"></pre>
+                    </div>
+                    <div id="prettyData" class="pretty-data">
+                        <div id="prettyDataContent"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropZone = document.getElementById('dropZone');
-            const fileInput = document.getElementById('fileInput');
-            const loading = document.getElementById('loading');
-            const errorMessage = document.getElementById('errorMessage');
-            const results = document.getElementById('results');
-            const downloadButton = document.getElementById('downloadButton');
+        // Add template data
+        const TEMPLATE = {
+            "HAEMATOLOGY": {
+                "Complete Blood Count": [
+                    "WBC Count",
+                    "RBC Count",
+                    "Hemoglobin",
+                    "Packed Cell Volume [PCV]",
+                    "Platelet Count"
+                ],
+                "Differential Count": [
+                    "Neutrophils",
+                    "Lymphocytes",
+                    "Eosinophils",
+                    "Monocytes",
+                    "Basophils",
+                    "Mylocytes",
+                    "Metamylocytes",
+                    "Blast"
+                ],
+                "Prothrombin Time": [
+                    "Test",
+                    "Control",
+                    "INR"
+                ]
+            }
+        };
 
-            // Handle file selection
-            dropZone.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', handleFileSelect);
+        // Function to create ordered JSON
+        function createOrderedJson(data) {
+            const orderedData = {
+                metadata: {
+                    date: data.metadata.date
+                },
+                HAEMATOLOGY: {}
+            };
 
-            // Handle drag and drop
-            dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                dropZone.classList.add('dragover');
-            });
-
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('dragover');
-            });
-
-            dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFile(files[0]);
-                }
-            });
-
-            function handleFileSelect(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    handleFile(file);
+            // Process sections in order
+            for (const section of ["Complete Blood Count", "Differential Count", "Prothrombin Time"]) {
+                orderedData.HAEMATOLOGY[section] = {};
+                const fields = TEMPLATE.HAEMATOLOGY[section];
+                
+                // Process fields in order
+                for (const field of fields) {
+                    orderedData.HAEMATOLOGY[section][field] = data.HAEMATOLOGY[section][field] || "N/A";
                 }
             }
 
-            function handleFile(file) {
-                const formData = new FormData();
-                formData.append('file', file);
+            return orderedData;
+        }
 
-                loading.classList.add('active');
-                errorMessage.classList.remove('show');
-                results.classList.add('hidden');
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('pdfFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a PDF file');
+                return;
+            }
 
-                fetch('/api/upload', {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading
+            document.querySelector('.loading').style.display = 'block';
+            document.querySelector('.result-section').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/ocr', {
                     method: 'POST',
                     body: formData
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.json().then(data => {
-                            throw new Error(data.error || 'Failed to process file');
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    displayResults(data);
-                })
-                .catch(error => {
-                    errorMessage.textContent = error.message;
-                    errorMessage.classList.add('show');
-                })
-                .finally(() => {
-                    loading.classList.remove('active');
                 });
-            }
 
-            function displayResults(data) {
-                results.classList.remove('hidden');
-                
-                // Display results
-                const tableBody = document.getElementById('resultsTableBody');
-                tableBody.innerHTML = renderTable(data.data.json);
-                
-                // Set up download button
-                downloadButton.onclick = () => downloadFile(data.data.text_file);
-            }
+                const result = await response.json();
 
-            function renderTable(data) {
-                let html = '';
-                for (const [key, value] of Object.entries(data)) {
-                    if (typeof value === 'object' && value !== null) {
-                        html += `
-                            <tr class="category-header">
-                                <td colspan="2">${key}</td>
-                            </tr>
-                            ${renderTable(value)}
-                        `;
-                    } else {
-                        html += `
-                            <tr>
-                                <td>${key}</td>
-                                <td class="value-cell">${value || 'N/A'}</td>
-                            </tr>
-                        `;
-                    }
+                if (response.ok) {
+                    // Create ordered JSON
+                    const orderedData = createOrderedJson(result.extracted_data);
+                    
+                    // Display results
+                    document.getElementById('extractedData').textContent = 
+                        JSON.stringify(orderedData, null, 2);
+                    
+                    // Create pretty view
+                    createPrettyView(orderedData);
+                    
+                    document.querySelector('.result-section').style.display = 'block';
+                } else {
+                    alert('Error: ' + result.detail);
                 }
-                return html;
-            }
-
-            function downloadFile(filePath) {
-                window.location.href = `/api/download/${filePath}`;
+            } catch (error) {
+                alert('Error processing file: ' + error.message);
+            } finally {
+                // Hide loading
+                document.querySelector('.loading').style.display = 'none';
             }
         });
+
+        // Toggle between JSON and Pretty views
+        document.getElementById('jsonViewBtn').addEventListener('click', function() {
+            document.getElementById('jsonData').style.display = 'block';
+            document.getElementById('prettyData').style.display = 'none';
+            this.classList.add('active');
+            document.getElementById('prettyViewBtn').classList.remove('active');
+        });
+
+        document.getElementById('prettyViewBtn').addEventListener('click', function() {
+            document.getElementById('jsonData').style.display = 'none';
+            document.getElementById('prettyData').style.display = 'block';
+            this.classList.add('active');
+            document.getElementById('jsonViewBtn').classList.remove('active');
+        });
+
+        function createPrettyView(data) {
+            const container = document.getElementById('prettyDataContent');
+            container.innerHTML = '';
+
+            // Add date
+            if (data.metadata && data.metadata.date) {
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'mb-3';
+                dateDiv.innerHTML = `<strong>Date:</strong> ${data.metadata.date}`;
+                container.appendChild(dateDiv);
+            }
+
+            // Process each section in the exact order from template
+            if (data.HAEMATOLOGY) {
+                // Define the order of sections
+                const sectionOrder = [
+                    "Complete Blood Count",
+                    "Differential Count",
+                    "Prothrombin Time"
+                ];
+
+                // Process sections in the defined order
+                for (const section of sectionOrder) {
+                    const values = data.HAEMATOLOGY[section];
+                    if (!values) continue;
+
+                    const sectionDiv = document.createElement('div');
+                    sectionDiv.className = 'section-title';
+                    sectionDiv.textContent = section;
+                    container.appendChild(sectionDiv);
+
+                    const table = document.createElement('table');
+                    table.className = 'data-table';
+                    
+                    // Create table header
+                    const thead = document.createElement('thead');
+                    thead.innerHTML = `
+                        <tr>
+                            <th>Test</th>
+                            <th>Value</th>
+                        </tr>
+                    `;
+                    table.appendChild(thead);
+
+                    // Create table body
+                    const tbody = document.createElement('tbody');
+                    
+                    // Get the field order from the template
+                    const fieldOrder = TEMPLATE.HAEMATOLOGY[section];
+                    
+                    // Process fields in the exact order from template
+                    for (const field of fieldOrder) {
+                        const value = values[field] || 'N/A';
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${field}</td>
+                            <td>${value}</td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                    
+                    table.appendChild(tbody);
+                    container.appendChild(table);
+                }
+            }
+        }
     </script>
 </body>
 </html> 

@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 import os
 from werkzeug.utils import secure_filename
-from pdf_ocr import process_file as process_document_intelligence
+from main import process_file as process_document_intelligence
 import json
 from datetime import datetime
 import traceback
