@@ -28,6 +28,23 @@
             margin-top: 20px;
             font-weight: bold;
         }
+        .file-list {
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .file-item {
+            padding: 5px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .file-item:last-child {
+            border-bottom: none;
+        }
+        .source-info {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -38,10 +55,13 @@
             <div class="card-body">
                 <form id="uploadForm">
                     <div class="mb-3">
-                        <label for="pdfFile" class="form-label">Select PDF File</label>
-                        <input type="file" class="form-control" id="pdfFile" accept=".pdf" required>
+                        <label for="pdfFiles" class="form-label">Select PDF Files</label>
+                        <input type="file" class="form-control" id="pdfFiles" accept=".pdf" multiple required>
+                        <div class="form-text">You can select multiple PDF files to process together</div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Process PDF</button>
+                    <div id="fileList" class="file-list"></div>
+                    <button type="submit" class="btn btn-primary mt-3">Process PDFs</button>
+                    <button type="button" class="btn btn-secondary mt-3 ms-2" id="appendBtn" style="display: none;">Add More PDFs</button>
                 </form>
             </div>
         </div>
@@ -51,12 +71,15 @@
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <span class="ms-2">Processing PDF...</span>
+                <span class="ms-2">Processing PDFs...</span>
             </div>
         </div>
 
         <div class="result-section">
-            <div class="d-flex justify-content-end mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="processed-files">
+                    <small class="text-muted">Processed files: <span id="processedFiles">0</span></small>
+                </div>
                 <div class="btn-group" role="group">
                     <button type="button" class="btn btn-outline-primary active" id="jsonViewBtn">JSON View</button>
                     <button type="button" class="btn btn-outline-primary" id="prettyViewBtn">Pretty View</button>
@@ -65,7 +88,7 @@
             
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Extracted Data</h5>
+                    <h5 class="card-title mb-0">Combined Results</h5>
                 </div>
                 <div class="card-body">
                     <div id="jsonData" class="json-data">
@@ -108,6 +131,8 @@
             }
         };
 
+        let currentSessionId = null;
+
         // Function to create ordered JSON
         function createOrderedJson(data) {
             const orderedData = {
@@ -131,49 +156,90 @@
             return orderedData;
         }
 
+        // Update file list display
+        document.getElementById('pdfFiles').addEventListener('change', function(e) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            Array.from(this.files).forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.textContent = file.name;
+                fileList.appendChild(div);
+            });
+        });
+
+        // Handle append button click
+        document.getElementById('appendBtn').addEventListener('click', function() {
+            document.getElementById('pdfFiles').value = '';
+            document.getElementById('fileList').innerHTML = '';
+            document.getElementById('appendBtn').style.display = 'none';
+        });
+
+        async function processFiles(formData, isAppend = false) {
+            const url = isAppend ? '/api/ocr/append' : '/api/ocr';
+            if (isAppend && currentSessionId) {
+                formData.append('session_id', currentSessionId);
+            }
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Store session ID
+                currentSessionId = result.session_id;
+                
+                // Update processed files count
+                document.getElementById('processedFiles').textContent = result.document_names.length;
+                
+                // Create ordered JSON
+                const orderedData = createOrderedJson(result.extracted_data);
+                
+                // Display results
+                document.getElementById('extractedData').textContent = 
+                    JSON.stringify(orderedData, null, 2);
+                
+                // Create pretty view
+                createPrettyView(orderedData);
+                
+                document.querySelector('.result-section').style.display = 'block';
+                document.getElementById('appendBtn').style.display = 'inline-block';
+            } else {
+                alert('Error: ' + result.error);
+            }
+
+            return response.ok;
+        }
+
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const fileInput = document.getElementById('pdfFile');
-            const file = fileInput.files[0];
+            const fileInput = document.getElementById('pdfFiles');
+            const files = fileInput.files;
             
-            if (!file) {
-                alert('Please select a PDF file');
+            if (files.length === 0) {
+                alert('Please select at least one PDF file');
                 return;
             }
 
             const formData = new FormData();
-            formData.append('file', file);
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
 
             // Show loading
             document.querySelector('.loading').style.display = 'block';
             document.querySelector('.result-section').style.display = 'none';
 
             try {
-                const response = await fetch('/api/ocr', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    // Create ordered JSON
-                    const orderedData = createOrderedJson(result.extracted_data);
-                    
-                    // Display results
-                    document.getElementById('extractedData').textContent = 
-                        JSON.stringify(orderedData, null, 2);
-                    
-                    // Create pretty view
-                    createPrettyView(orderedData);
-                    
-                    document.querySelector('.result-section').style.display = 'block';
-                } else {
-                    alert('Error: ' + result.detail);
-                }
+                const isAppend = currentSessionId !== null;
+                await processFiles(formData, isAppend);
             } catch (error) {
-                alert('Error processing file: ' + error.message);
+                alert('Error processing files: ' + error.message);
             } finally {
                 // Hide loading
                 document.querySelector('.loading').style.display = 'none';

@@ -1,158 +1,175 @@
-# Medical Report OCR
+# Medical Report OCR Application
 
-A web application for extracting structured data from medical reports using Azure's Document Intelligence service. The application processes PDF files and extracts specific medical test results in a structured format.
+A web application for extracting structured data from medical reports using Azure's Document Intelligence service. The application processes PDF files asynchronously and allows for incremental addition of documents to build a complete dataset.
 
 ## Features
 
-- Upload and process medical report PDFs
-- Extract structured data using Azure Document Intelligence
-- Display results in both JSON and formatted table views
-- Maintain exact data structure as per template
-- Real-time processing with loading indicators
-- Responsive web interface
+- Upload and process multiple PDF files concurrently
+- Asynchronous processing for better performance
+- Add more PDFs to existing results
+- Maintains data structure according to template
+- Combines results from multiple documents intelligently
+- Toggle between JSON and Pretty views
+- Real-time processing status updates
+- Session-based result management
 
 ## Project Structure
 
 ```
 .
-├── main.py              # Flask backend server
+├── main.py              # Flask application with async endpoints
 ├── simple_ocr.py        # OCR processing logic
 ├── template.json        # Data structure template
 ├── requirements.txt     # Python dependencies
-├── templates/          # HTML templates
-│   └── index.html      # Main application page
-└── .env               # Environment variables (create this)
+├── .env                 # Environment variables (not in repo)
+└── templates/
+    └── index.html       # Web interface
 ```
 
 ## Prerequisites
 
 - Python 3.8 or higher
 - Azure Document Intelligence service account
-- Modern web browser
+- Environment variables set up in `.env` file
 
-## Setup
+## Setup Instructions
 
 1. Clone the repository:
-```bash
-git clone https://github.com/AkashChintaluri/elimai-q2
-cd elimai-q2
-```
+   ```bash
+   git clone <repository-url>
+   cd ocr-elimai
+   ```
 
-2. Create a virtual environment and activate it:
-```bash
-# Windows
-python -m venv venv
-venv\Scripts\activate
-
-# Linux/Mac
-python3 -m venv venv
-source venv/bin/activate
-```
+2. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   # On Windows
+   .\venv\Scripts\activate
+   # On Unix/MacOS
+   source venv/bin/activate
+   ```
 
 3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-4. Create a `.env` file in the project root with your Azure credentials:
-```
-AZURE_DI_ENDPOINT=your_endpoint_here
-AZURE_DI_KEY=your_key_here
-```
+4. Create a `.env` file with your Azure credentials:
+   ```
+   AZURE_DI_ENDPOINT=your_endpoint
+   AZURE_DI_KEY=your_key
+   ```
 
 ## Running the Application
 
-1. Start the Flask server:
-```bash
-python main.py
-```
+1. Start the Hypercorn server:
+   ```bash
+   hypercorn main:app --bind 0.0.0.0:8000
+   ```
 
-2. Open your web browser and navigate to:
-```
-http://localhost:8000
-```
+2. Access the application:
+   - Open your browser and navigate to `http://localhost:8000`
+   - The web interface will be available for PDF upload and processing
 
-## Usage
+## Usage Guide
 
-1. On the web interface, click "Choose File" to select a medical report PDF
-2. Click "Process PDF" to start the extraction
-3. Wait for the processing to complete
-4. View the results in either:
-   - JSON View: Raw structured data
-   - Pretty View: Formatted table view
+1. Initial Upload:
+   - Click "Choose Files" to select one or more PDF files
+   - Click "Process PDFs" to start processing
+   - Wait for the results to appear
+
+2. Adding More PDFs:
+   - After initial processing, click "Add More PDFs"
+   - Select additional PDF files
+   - New results will be combined with existing data
+
+3. Viewing Results:
+   - Toggle between "JSON View" and "Pretty View"
+   - JSON View shows the raw structured data
+   - Pretty View displays a formatted table of results
 
 ## Data Structure
 
-The application extracts data according to the following structure:
+The application maintains a structured format for extracted data:
 
 ```json
 {
-    "metadata": {
-        "date": "YYYY-MM-DD"
+  "metadata": {
+    "date": "YYYY-MM-DD"
+  },
+  "HAEMATOLOGY": {
+    "Complete Blood Count": {
+      "WBC Count": "value",
+      "RBC Count": "value",
+      // ... other fields
     },
-    "HAEMATOLOGY": {
-        "Complete Blood Count": {
-            "WBC Count": "value",
-            "RBC Count": "value",
-            "Hemoglobin": "value",
-            "Packed Cell Volume [PCV]": "value",
-            "Platelet Count": "value"
-        },
-        "Differential Count": {
-            "Neutrophils": "value",
-            "Lymphocytes": "value",
-            "Eosinophils": "value",
-            "Monocytes": "value",
-            "Basophils": "value",
-            "Mylocytes": "value",
-            "Metamylocytes": "value",
-            "Blast": "value"
-        },
-        "Prothrombin Time": {
-            "Test": "value",
-            "Control": "value",
-            "INR": "value"
-        }
+    "Differential Count": {
+      "Neutrophils": "value",
+      "Lymphocytes": "value",
+      // ... other fields
+    },
+    "Prothrombin Time": {
+      "Test": "value",
+      "Control": "value",
+      "INR": "value"
     }
+  }
 }
 ```
 
 ## Error Handling
 
 The application handles various error cases:
-- Invalid file types (only PDFs accepted)
-- Missing or invalid Azure credentials
+- Invalid file types
+- Missing files
 - OCR processing failures
-- File access issues
+- Azure service errors
+- Network issues
 
-## Development
+Errors are logged and displayed to the user with appropriate messages.
+
+## Development Information
 
 ### Adding New Fields
 
-To add new fields to the extraction:
-1. Update `template.json` with the new field structure
-2. Add corresponding term variations in `TERM_VARIATIONS` in `simple_ocr.py`
-3. Update the frontend template in `templates/index.html`
+To add new fields to the template:
+1. Update `template.json` with new field definitions
+2. The application will automatically include new fields in processing
+3. Results will maintain the specified order
 
-### Modifying the Template
+### Async Processing
 
-The template structure can be modified by editing `template.json`. The application will automatically maintain the order of fields as specified in the template.
+The application uses:
+- Flask with async support
+- Hypercorn as the ASGI server
+- ThreadPoolExecutor for CPU-bound tasks
+- Asyncio for concurrent PDF processing
+
+### Session Management
+
+- Each upload session gets a unique ID
+- Results are stored in memory
+- Multiple users can process files concurrently
+- Session data persists until server restart
 
 ## Troubleshooting
 
-1. If you get a "Resource not found" error:
-   - Verify your Azure Document Intelligence endpoint and key
-   - Ensure the service is properly provisioned
+Common issues and solutions:
 
-2. If processing fails:
-   - Check if the PDF is readable and not corrupted
-   - Verify the PDF contains text (not just images)
-   - Check the application logs for detailed error messages
-
-3. If the web interface doesn't load:
-   - Ensure the Flask server is running
+1. Server won't start:
    - Check if port 8000 is available
    - Verify all dependencies are installed
+   - Ensure environment variables are set
+
+2. PDF processing fails:
+   - Verify PDF file is not corrupted
+   - Check Azure service credentials
+   - Ensure PDF is readable and contains text
+
+3. Async errors:
+   - Verify Flask async support is installed
+   - Check Hypercorn is running
+   - Ensure Python 3.8+ is being used
 
 ## Contributing
 
@@ -168,6 +185,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- Azure Document Intelligence service
-- Flask web framework
-- Bootstrap for the UI
+- Azure Document Intelligence for OCR capabilities
+- Flask for the web framework
+- Hypercorn for async server support
