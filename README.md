@@ -36,8 +36,8 @@ A web application for extracting structured data from medical reports using Azur
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd ocr-elimai
+   git clone https://github.com/AkashChintaluri/elimai-q2
+   cd elimai-q2
    ```
 
 2. Create and activate a virtual environment:
