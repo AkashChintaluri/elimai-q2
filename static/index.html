@@ -14,7 +14,6 @@
             background-color: #f8fafc;
             min-height: 100vh;
         }
-
         .container {
             background-color: white;
             padding: 32px;
@@ -22,11 +21,9 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             transition: transform 0.2s ease;
         }
-
         .container:hover {
             transform: translateY(-2px);
         }
-
         h1 {
             color: #1e293b;
             text-align: center;
@@ -34,7 +31,6 @@
             font-size: 2rem;
             font-weight: 700;
         }
-
         .upload-section {
             text-align: center;
             margin-bottom: 24px;
@@ -44,15 +40,12 @@
             background-color: #f9fafb;
             transition: border-color 0.3s ease;
         }
-
         .upload-section:hover {
             border-color: #93c5fd;
         }
-
         .file-input {
             display: none;
         }
-
         .upload-btn {
             background-color: #3b82f6;
             color: white;
@@ -64,20 +57,16 @@
             font-weight: 500;
             transition: all 0.2s ease;
         }
-
         .upload-btn:hover {
             background-color: #2563eb;
             transform: translateY(-1px);
         }
-
         .upload-btn:active {
             transform: translateY(0);
         }
-
         .progress-container {
             margin-top: 24px;
         }
-
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -85,14 +74,12 @@
             border-radius: 4px;
             overflow: hidden;
         }
-
         .progress {
             width: 0%;
             height: 100%;
             background: linear-gradient(to right, #3b82f6, #60a5fa);
             transition: width 0.4s ease;
         }
-
         .results {
             margin-top: 24px;
             padding: 24px;
@@ -100,14 +87,12 @@
             border-radius: 12px;
             background-color: white;
         }
-
         .file-status {
             margin-top: 16px;
             font-size: 14px;
             color: #64748b;
             font-weight: 500;
         }
-
         .error {
             color: #dc2626;
             margin-top: 16px;
@@ -115,26 +100,15 @@
             background-color: #fef2f2;
             border-radius: 8px;
         }
-
-        .success {
-            color: #15803d;
-            margin-top: 16px;
-            padding: 16px;
-            background-color: #f0fdf4;
-            border-radius: 8px;
-        }
-
         .structured-data {
             margin-top: 24px;
             padding: 24px;
             background-color: #f9fafb;
             border-radius: 12px;
         }
-
         .section {
             margin-bottom: 24px;
         }
-
         .section h3 {
             color: #1e293b;
             border-bottom: 2px solid #3b82f6;
@@ -142,69 +116,22 @@
             font-size: 1.25rem;
             font-weight: 600;
         }
-
         table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             margin-top: 12px;
         }
-
         th, td {
             padding: 12px 16px;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
-
         th {
             background-color: #f1f5f9;
             font-weight: 600;
             color: #1e293b;
         }
-
-        .status {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .status.normal {
-            background-color: #dcfce7;
-            color: #15803d;
-        }
-
-        .status.high {
-            background-color: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .status.low {
-            background-color: #ffedd5;
-            color: #c2410c;
-        }
-
-        .download-btn {
-            background-color: #10b981;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .download-btn:hover {
-            background-color: #059669;
-            transform: translateY(-1px);
-        }
-
-        .download-btn:active {
-            transform: translateY(0);
-        }
-
         .view-toggle {
             background-color: #6b7280;
             color: white;
@@ -216,20 +143,16 @@
             font-weight: 500;
             transition: all 0.2s ease;
         }
-
         .view-toggle:hover {
             background-color: #4b5563;
             transform: translateY(-1px);
         }
-
         .view-toggle:active {
             transform: translateY(0);
         }
-
         .view-toggle.active {
             background-color: #3b82f6;
         }
-
         .json-view {
             background-color: #f9fafb;
             padding: 24px;
@@ -241,43 +164,44 @@
             overflow-x: auto;
             display: none;
         }
-
         .pretty-view {
             display: block;
         }
-
         .view-toggle-container {
             display: flex;
             gap: 12px;
             margin-top: 24px;
         }
-
         @media (max-width: 768px) {
-            .container {
-                padding: 16px;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-
-            .upload-section {
-                padding: 16px;
-            }
-
-            .upload-btn, .download-btn, .view-toggle {
-                width: 100%;
-                padding: 12px;
-            }
-
-            .view-toggle-container {
-                flex-direction: column;
-            }
-
-            th, td {
-                padding: 8px;
-                font-size: 14px;
-            }
+            .container { padding: 16px; }
+            h1 { font-size: 1.5rem; }
+            .upload-section { padding: 16px; }
+            .upload-btn, .view-toggle { width: 100%; padding: 12px; }
+            .view-toggle-container { flex-direction: column; }
+            th, td { padding: 8px; font-size: 14px; }
+        }
+        .processing {
+            background-color: #f0f9ff;
+            color: #0369a1;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .processing::before {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid #0369a1;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -304,16 +228,13 @@
         let processedFiles = 0;
         let totalFiles = 0;
 
-        // Fetch template data when page loads
-        fetch('/template')
+        fetch('/template/')
             .then(response => response.json())
             .then(data => {
                 templateData = data;
                 console.log('Template loaded:', templateData);
             })
-            .catch(error => {
-                console.error('Error loading template:', error);
-            });
+            .catch(error => console.error('Error loading template:', error));
 
         function updateFileStatus(files) {
             const fileStatus = document.getElementById('fileStatus');
@@ -335,7 +256,6 @@
             const jsonView = document.querySelector('.json-view');
             const prettyBtn = document.querySelector('.view-toggle[data-view="pretty"]');
             const jsonBtn = document.querySelector('.view-toggle[data-view="json"]');
-
             if (prettyView && jsonView && prettyBtn && jsonBtn) {
                 if (viewType === 'pretty') {
                     prettyView.style.display = 'block';
@@ -351,11 +271,8 @@
             }
         }
 
-        function updateCombinedResults(newResult) {
-            console.log('Updating results with:', newResult);
-            
+        function updateCombinedResults(results) {
             if (!combinedResults) {
-                console.log('Initializing combined results');
                 combinedResults = {
                     metadata: {
                         date: new Date().toISOString().split('T')[0],
@@ -367,25 +284,26 @@
                 };
             }
 
-            // Update metadata
-            combinedResults.metadata.files_processed++;
-            combinedResults.metadata.total_size += newResult.metadata.document_size || 0;
-            combinedResults.metadata.filenames.push(newResult.metadata.filename);
+            results.forEach(result => {
+                if (result.metadata.error) {
+                    console.error(`Error in file ${result.metadata.filename}: ${result.metadata.error}`);
+                    return;
+                }
+                combinedResults.metadata.files_processed++;
+                combinedResults.metadata.total_size += result.metadata.document_size || 0;
+                combinedResults.metadata.filenames.push(result.metadata.filename);
 
-            // Aggregate test results, updating only if current value is "N/A" or undefined
-            if (newResult.content?.structured_data) {
-                Object.entries(newResult.content.structured_data).forEach(([section, sectionData]) => {
-                    if (!combinedResults.structured_data[section]) {
-                        combinedResults.structured_data[section] = {};
-                    }
-                    Object.entries(sectionData).forEach(([subsection, tests]) => {
-                        if (!combinedResults.structured_data[section][subsection]) {
-                            combinedResults.structured_data[section][subsection] = {};
+                if (result.content?.structured_data) {
+                    Object.entries(result.content.structured_data).forEach(([section, sectionData]) => {
+                        if (!combinedResults.structured_data[section]) {
+                            combinedResults.structured_data[section] = {};
                         }
-                        if (Array.isArray(tests)) {
+                        Object.entries(sectionData).forEach(([subsection, tests]) => {
+                            if (!combinedResults.structured_data[section][subsection]) {
+                                combinedResults.structured_data[section][subsection] = {};
+                            }
                             tests.forEach(test => {
                                 const currentTest = combinedResults.structured_data[section][subsection][test.name];
-                                // Update value only if no valid value exists (i.e., current is undefined or "N/A")
                                 if (!currentTest || currentTest.value === 'N/A') {
                                     combinedResults.structured_data[section][subsection][test.name] = {
                                         name: test.name,
@@ -393,87 +311,53 @@
                                     };
                                 }
                             });
-                        }
+                        });
                     });
-                });
-            }
+                }
+                processedFiles++;
+                updateProgress();
+            });
 
-            console.log('Updated combined results:', combinedResults);
             displayResults(combinedResults);
-            processedFiles++;
-            updateProgress();
         }
 
         function displayResults(result) {
-            console.log('Displaying results:', result);
-            if (!result) {
-                console.log('No results to display');
-                return;
-            }
-
+            if (!result) return;
             const resultsDiv = document.getElementById('results');
-            if (!resultsDiv) {
-                console.error('Results div not found');
-                return;
-            }
-            
             let html = `
                 <div class="view-toggle-container">
                     <button class="view-toggle active" data-view="pretty" onclick="toggleView('pretty')">Pretty View</button>
                     <button class="view-toggle" data-view="json" onclick="toggleView('json')">JSON View</button>
                 </div>
+                <div class="pretty-view">
+                    <div class="structured-data">
+                        <div class="section">
+                            <h3>Metadata</h3>
+                            <table>
+                                <tr><th>Date</th><td>${result.metadata.date}</td></tr>
+                                <tr><th>Files Processed</th><td>${result.metadata.files_processed}</td></tr>
+                                <tr><th>Total Size</th><td>${result.metadata.total_size} bytes</td></tr>
+                                <tr><th>Filenames</th><td>${result.metadata.filenames.join(', ')}</td></tr>
+                            </table>
+                        </div>
             `;
 
-            // Create pretty view
-            html += '<div class="pretty-view">';
-            html += '<div class="structured-data">';
-            
-            // Add metadata section
-            html += `
-                <div class="section">
-                    <h3>Metadata</h3>
-                    <table>
-                        <tr><th>Date</th><td>${result.metadata.date}</td></tr>
-                        <tr><th>Files Processed</th><td>${result.metadata.files_processed}</td></tr>
-                        <tr><th>Total Size</th><td>${result.metadata.total_size} bytes</td></tr>
-                        <tr><th>Filenames</th><td>${result.metadata.filenames.join(', ')}</td></tr>
-                    </table>
-                </div>
-            `;
-
-            // Combine results into a single table per section/subsection
             if (templateData) {
                 Object.entries(templateData).forEach(([section, sectionData]) => {
                     if (section !== 'metadata') {
                         html += `<div class="section"><h3>${section}</h3>`;
-                        
                         Object.entries(sectionData).forEach(([subsection, testNames]) => {
-                            html += `<h4>${subsection}</h4>`;
-                            html += `
-                                <table>
-                                    <tr>
-                                        <th>Test</th>
-                                        <th>Value</th>
-                                    </tr>
-                            `;
-                            
+                            html += `<h4>${subsection}</h4><table><tr><th>Test</th><th>Value</th></tr>`;
                             testNames.forEach(testName => {
                                 let value = 'N/A';
                                 const testData = result.structured_data?.[section]?.[subsection]?.[testName];
-                                if (testData && testData.value !== undefined && testData.value !== 'N/A') {
+                                if (testData && testData.value !== 'N/A') {
                                     value = testData.value;
                                 }
-                                html += `
-                                    <tr>
-                                        <td>${testName}</td>
-                                        <td>${value}</td>
-                                    </tr>
-                                `;
+                                html += `<tr><td>${testName}</td><td>${value}</td></tr>`;
                             });
-                            
                             html += '</table>';
                         });
-                        
                         html += '</div>';
                     }
                 });
@@ -482,68 +366,9 @@
             }
 
             html += '</div></div>';
-
-            // Create JSON view
             html += `<div class="json-view">${JSON.stringify(result, null, 2)}</div>`;
-
             resultsDiv.innerHTML = html;
             toggleView('pretty');
-        }
-
-        async function processFile(file) {
-            if (processingFiles.has(file.name)) {
-                console.log(`File ${file.name} is already being processed`);
-                return;
-            }
-
-            console.log(`Starting processing of ${file.name}`);
-            processingFiles.add(file.name);
-            const formData = new FormData();
-            formData.append('file', file, file.name);
-
-            try {
-                const response = await fetch('/upload/', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    let errorMessage = `HTTP error! status: ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        if (errorData.detail && Array.isArray(errorData.detail)) {
-                            errorMessage = errorData.detail.map(err => {
-                                const location = Array.isArray(err.loc) ? err.loc.join('.') : err.loc;
-                                return `${location}: ${err.msg}`;
-                            }).join('\n');
-                        } else if (errorData.detail) {
-                            errorMessage = errorData.detail;
-                        } else if (typeof errorData === 'object') {
-                            errorMessage = JSON.stringify(errorData, null, 2);
-                        }
-                    } catch (e) {
-                        console.error('Error parsing error response:', e);
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                const result = await response.json();
-                console.log(`Processing complete for ${file.name}:`, result);
-                updateCombinedResults(result);
-            } catch (error) {
-                console.error(`Error processing file ${file.name}:`, error);
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML += `
-                    <div class="error">
-                        <h3>Error Processing File: ${file.name}</h3>
-                        <pre style="white-space: pre-wrap; background: #f8f8f8; padding: 10px; border-radius: 4px;">${error.message}</pre>
-                        <p>Please ensure you are uploading valid PDF files.</p>
-                    </div>
-                `;
-            } finally {
-                processingFiles.delete(file.name);
-                console.log(`Finished processing ${file.name}`);
-            }
         }
 
         async function processFiles() {
@@ -555,31 +380,57 @@
                 return;
             }
 
-            console.log(`Starting processing of ${files.length} files`);
-            
-            // Reset state
-            combinedResults = null;
             processedFiles = 0;
             totalFiles = files.length;
             processingFiles.clear();
 
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '<div class="processing">Processing files...</div>';
+            const processingDiv = document.createElement('div');
+            processingDiv.className = 'processing';
+            processingDiv.textContent = 'Processing new files...';
+            resultsDiv.insertBefore(processingDiv, resultsDiv.firstChild);
 
             updateFileStatus(files);
             updateProgress();
 
-            // Process files concurrently with progress tracking
-            const filePromises = Array.from(files).map(file => processFile(file));
-            await Promise.all(filePromises);
-            console.log('All files processed');
+            const formData = new FormData();
+            for (const file of files) {
+                formData.append('files', file, file.name);
+            }
+
+            try {
+                const response = await fetch('/upload/batch/', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const processingMessage = resultsDiv.querySelector('.processing');
+                if (processingMessage) {
+                    processingMessage.remove();
+                }
+                updateCombinedResults(data.results);
+            } catch (error) {
+                console.error('Error processing files:', error);
+                const processingMessage = resultsDiv.querySelector('.processing');
+                if (processingMessage) {
+                    processingMessage.remove();
+                }
+                resultsDiv.insertAdjacentHTML('afterbegin', `
+                    <div class="error">
+                        <h3>Error Processing Files</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `);
+            }
         }
 
-        // Add event listener for file input change
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            console.log('File input changed');
-            processFiles();
-        });
+        document.getElementById('fileInput').addEventListener('change', processFiles);
     </script>
 </body>
 </html>

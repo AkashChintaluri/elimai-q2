@@ -1,20 +1,18 @@
+
 import os
 import json
 from datetime import datetime
-from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from mistralai import Mistral
-from mistralai.models import APIEndpoint
-from dotenv import load_dotenv
 import asyncio
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import re
-import traceback
+from concurrent.futures import ThreadPoolExecutor
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from dotenv import load_dotenv
+import traceback
 
 # Load environment variables
 load_dotenv()
@@ -26,27 +24,7 @@ if not MISTRAL_API_KEY:
 
 client = Mistral(api_key=MISTRAL_API_KEY)
 
-# Create necessary directories
-UPLOAD_DIR = Path("uploads")
-RESULTS_DIR = Path("results")
-UPLOAD_DIR.mkdir(exist_ok=True)
-RESULTS_DIR.mkdir(exist_ok=True)
-
-app = FastAPI()
-
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Load template
+# Cache template at startup
 try:
     with open("template.json", "r") as f:
         TEMPLATE = json.load(f)
@@ -78,56 +56,53 @@ except Exception as e:
         }
     }
 
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+def extract_test_value(test, text, pattern_cache):
+    try:
+        test_pattern = pattern_cache.get(test, re.compile(f"{re.escape(test)}[:\\s]+", re.IGNORECASE))
+        pattern_cache[test] = test_pattern
+        test_match = test_pattern.search(text)
+        value = "N/A"
+        if test_match:
+            start_pos = test_match.end()
+            value_match = re.search(r'\d+\.?\d*', text[start_pos:])
+            if value_match:
+                value = float(value_match.group())
+        return test, value
+    except Exception as e:
+        print(f"Error extracting {test}: {str(e)}")
+        return test, "N/A"
+
 def extract_data_from_text(text: str) -> dict[str, any]:
-    """Extract relevant data from OCR text based on template structure."""
     try:
         result = {}
-        print(f"Extracting data from text (length: {len(text)} characters)")
-        
-        # Process each main section in the template
+        pattern_cache = {}
         for section_name, section_data in TEMPLATE.items():
             if section_name == "metadata":
                 continue
-                
             result[section_name] = {}
-            
-            # Process each subsection in the section
             for subsection_name, tests in section_data.items():
                 result[section_name][subsection_name] = []
-                
-                # Process each test in the subsection
-                for test in tests:
-                    try:
-                        # Find the test name in the text
-                        test_pattern = re.compile(f"{re.escape(test)}[:\\s]+", re.IGNORECASE)
-                        test_match = test_pattern.search(text)
-                        
-                        value = "N/A"
-                        if test_match:
-                            print(f"Found test: {test} at position {test_match.start()}")
-                            # Get the text after the test name
-                            start_pos = test_match.end()
-                            remaining_text = text[start_pos:start_pos+100]  # Limit for logging
-                            print(f"Text after {test}: {remaining_text}")
-                            
-                            # Find the first numerical value
-                            value_match = re.search(r'\d+\.?\d*', text[start_pos:])
-                            if value_match:
-                                value = float(value_match.group())
-                                print(f"Extracted value for {test}: {value}")
-                                
+                with ThreadPoolExecutor() as executor:
+                    test_results = executor.map(lambda test: extract_test_value(test, text, pattern_cache), tests)
+                    for test, value in test_results:
                         result[section_name][subsection_name].append({
                             "name": test,
                             "value": value
                         })
-                    except Exception as e:
-                        print(f"Error extracting {test} in {subsection_name}: {str(e)}")
-                        result[section_name][subsection_name].append({
-                            "name": test,
-                            "value": "N/A"
-                        })
-        
-        print(f"Extracted structured data: {json.dumps(result, indent=2)}")
         return result
     except Exception as e:
         print(f"Error in extract_data_from_text: {str(e)}")
@@ -135,33 +110,23 @@ def extract_data_from_text(text: str) -> dict[str, any]:
         return {}
 
 async def process_file_async(content: bytes, filename: str):
-    """Process a single file asynchronously."""
     try:
-        # Save the uploaded file
-        file_path = UPLOAD_DIR / filename
-        with open(file_path, "wb") as f:
-            f.write(content)
-        print("File saved successfully")
+        print(f"Processing {filename}...")
+        # Upload file content as bytes
+        uploaded_file = client.files.upload(
+            file={
+                "file_name": filename,
+                "content": content,  # Use raw bytes instead of BytesIO
+            },
+            purpose="ocr"
+        )
+        print(f"File uploaded: {uploaded_file.id}")
         
-        # Upload to Mistral
-        with open(file_path, "rb") as f:
-            print("Uploading to Mistral...")
-            uploaded_file = client.files.upload(
-                file={
-                    "file_name": filename,
-                    "content": f,
-                },
-                purpose="ocr"
-            )
-            print(f"File uploaded to Mistral: {uploaded_file.id}")
-        
-        # Get signed URL
-        print("Getting signed URL...")
+        # Get signed URL for OCR processing
         signed_url = client.files.get_signed_url(file_id=uploaded_file.id)
         print(f"Signed URL: {signed_url.url}")
         
         # Process with OCR
-        print("Processing OCR...")
         ocr_response = client.ocr.process(
             model="mistral-ocr-latest",
             document={
@@ -171,59 +136,24 @@ async def process_file_async(content: bytes, filename: str):
         )
         print("OCR processing complete")
         
-        # Extract text from all pages
-        if not hasattr(ocr_response, 'pages') or not ocr_response.pages:
-            error_msg = "No pages found in OCR response"
-            print(error_msg)
-            return {
-                "metadata": {
-                    "date": datetime.now().isoformat(),
-                    "filename": filename,
-                    "error": error_msg
-                },
-                "content": {
-                    "extracted_text": "",
-                    "structured_data": {}
-                }
-            }
+        extracted_text = "\n".join(page.markdown for page in ocr_response.pages) if hasattr(ocr_response, 'pages') else ""
+        structured_data = extract_data_from_text(extracted_text) if extracted_text else {}
         
-        # Combine text from all pages
-        extracted_text = "\n".join(page.markdown for page in ocr_response.pages)
-        print(f"Extracted text (first 500 chars): {extracted_text[:500]}")
-        print(f"Total extracted text length: {len(extracted_text)} characters")
-        
-        # Extract structured data based on template
-        print("Extracting structured data...")
-        try:
-            structured_data = extract_data_from_text(extracted_text)
-        except Exception as e:
-            print(f"Error extracting structured data: {str(e)}")
-            structured_data = {}
-        print("Structured data extraction complete")
-        
-        # Prepare metadata
-        metadata = {
-            "date": datetime.now().isoformat(),
-            "filename": filename,
-            "model": "mistral-ocr-latest",
-            "pages_processed": len(ocr_response.pages),
-            "document_size": len(content)
-        }
-        
-        # Prepare result
-        result = {
-            "metadata": metadata,
+        return {
+            "metadata": {
+                "date": datetime.now().isoformat(),
+                "filename": filename,
+                "model": "mistral-ocr-latest",
+                "pages_processed": len(ocr_response.pages) if hasattr(ocr_response, 'pages') else 0,
+                "document_size": len(content)
+            },
             "content": {
                 "extracted_text": extracted_text,
-                "structured_data": structured_data or {}
+                "structured_data": structured_data
             }
         }
-        
-        print(f"Processing complete for {filename}")
-        return result
-        
     except Exception as e:
-        print(f"Error in async processing of {filename}: {str(e)}")
+        print(f"Error processing {filename}: {str(e)}")
         print(traceback.format_exc())
         return {
             "metadata": {
@@ -236,30 +166,15 @@ async def process_file_async(content: bytes, filename: str):
                 "structured_data": {}
             }
         }
-    finally:
-        # Clean up the temporary file
-        try:
-            if file_path.exists():
-                file_path.unlink()
-                print(f"Cleaned up {filename}")
-        except Exception as e:
-            print(f"Error cleaning up {filename}: {str(e)}")
 
-@app.post("/upload/")
-async def upload_file(file: UploadFile):
-    if not file.filename.endswith('.pdf'):
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-    
+@app.post("/upload/batch/")
+async def upload_files(files: List[UploadFile]):
     try:
-        # Read file content
-        content = await file.read()
-        
-        # Process file asynchronously
-        result = await process_file_async(content, file.filename)
-        return result
-        
+        tasks = [process_file_async(await file.read(), file.filename) for file in files]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        return {"results": [result for result in results if not isinstance(result, Exception)]}
     except Exception as e:
-        print(f"Error processing {file.filename}: {str(e)}")
+        print(f"Error processing batch: {str(e)}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -270,14 +185,7 @@ async def read_root():
 
 @app.get("/template/")
 async def get_template():
-    try:
-        with open("template.json", "r") as f:
-            template = json.load(f)
-        return template
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="Template file not found")
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid template file format")
+    return TEMPLATE
 
 if __name__ == "__main__":
     import uvicorn
