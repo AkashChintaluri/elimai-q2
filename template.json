@@ -6,8 +6,8 @@
         "Complete Blood Count": [
             "WBC Count",
             "RBC Count",
-            "Hemoglobin",
-            "Packed Cell Volume [PCV]",
+            "Haemoglobin",
+            "PCV",
             "Platelet Count"
         ],
         "Differential Count": [
@@ -17,7 +17,6 @@
             "Monocytes",
             "Basophils",
             "Mylocytes",
-            "Metamylocytes",
             "Blast"
         ],
         "Prothrombin Time": [
